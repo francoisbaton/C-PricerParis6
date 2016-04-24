@@ -6,6 +6,7 @@
 #include <cmath>
 #include "Heston.h"
 #include <climits>
+#include <ctime>
 #include "BS.h"
 #include "MC.h"
 
@@ -13,9 +14,11 @@
 //Test de la classe Heston
 int main (int argc, const char * argv[]){
   
-  double sigma,k,rho,T,X0,V0,theta;
+
   
-  //Case CIR
+  double sigma,k,rho,T,X0,V0,theta;
+
+  
   sigma = 0.1;
   k = 2;
   rho = 0.5;
@@ -40,7 +43,6 @@ int main (int argc, const char * argv[]){
   //modele.assetEuler (&pathX,&pathV, T, N,&myGen);
   //modele.assetJK (&pathX,&pathV, T, N,&myGen);
   //modele.assetQE  (&pathX,&pathV, T, N,&myGen);
-  //modele.assetQE_M (&pathX,&pathV, T, N,&myGen);
   
   //Test de la classe Option
   double K = 100;
@@ -62,42 +64,36 @@ int main (int argc, const char * argv[]){
   MC* MC = new MonteCarlo(M);
   
   double priceHeston,varIc;
-  
-  //double begin = omp_get_wtime();
+  time_t tbegin,tend;
+
+
+  tbegin=time(NULL); 
   MC->computePriceOption(priceHeston, varIc,N, opt, &modele, &Heston::assetEuler);
-  //double end = omp_get_wtime();
+  tend=time(NULL); 
   std::cout << "Prix MC Euler:  " << priceHeston << "\n";
   std::cout << "IC = [ " << priceHeston - varIc/2 << " , " << priceHeston + varIc/2 << " ]\n";
   std::cout << "Largeur " << varIc << "\n";
   std::cout << "Diff = " << priceFFHeston - priceHeston << "\n";
-  //std::cout << "Time = " << end - begin << "\n \n";
+  std::cout << "Time = " << difftime(tend,tbegin) << "\n \n";
   
-  //begin = omp_get_wtime();
+  tbegin=time(NULL);
   MC->computePriceOption(priceHeston, varIc,N, opt, &modele, &Heston::assetJK);
-  //end = omp_get_wtime();
+  tend=time(NULL);
   std::cout << "Prix MC JK:  " << priceHeston << "\n";
   std::cout << "IC = [ " << priceHeston - varIc/2 << " , " << priceHeston + varIc/2 << " ]\n";
   std::cout << "Largeur " << varIc << "\n";
   std::cout << "Diff = " << priceFFHeston - priceHeston << "\n";
-  //std::cout << "Time = " << end - begin << "\n \n";
+  std::cout << "Time = " << difftime(tend,tbegin) << "\n \n";
   
-  //begin = omp_get_wtime();
+  tbegin=time(NULL);
   MC->computePriceOption(priceHeston, varIc,N, opt, &modele, &Heston::assetQE);
-  //end = omp_get_wtime();
+  tend=time(NULL);
   std::cout << "Prix MC QE:  " << priceHeston << "\n";
   std::cout << "IC = [ " << priceHeston - varIc/2 << " , " << priceHeston + varIc/2 << " ]\n";
   std::cout << "Largeur " << varIc << "\n";
   std::cout << "Diff = " << priceFFHeston - priceHeston << "\n";
-  //std::cout << "Time = " << end - begin << "\n \n";
+  std::cout << "Time = " << difftime(tend,tbegin) << "\n \n";
   
-  //begin = omp_get_wtime();
-  //MC->computePriceOption(priceHeston, varIc,N, opt, &modele, &Heston::assetQE_M);
-  //end = omp_get_wtime();
-  //std::cout << "Prix MC QE M:  " << priceHeston << "\n";
-  //std::cout << "IC = [ " << priceHeston - varIc/2 << " , " << priceHeston + varIc/2 << " ]\n";
-  //std::cout << "Largeur " << varIc << "\n";
-  //std::cout << "Diff = " << priceFFHeston - priceHeston << "\n";
-  //std::cout << "Time = " << end - begin << "\n \n";
   
   //Difference entre prixBS et prix Heston
   double priceBS = 0;
@@ -217,10 +213,7 @@ int main (int argc, const char * argv[]){
   
   fichier2 << priceFFHeston - priceHeston << ")";
   fichier2 << "\n" << "\n";
-  
-  std::cout << "QE-M \n";
-  fichier2 << "yQE_M = c(";
-  
+    
   for (int i = 0; i<len-1; i++){
     delta = vectDelta[i];
     std::cout << "Delta = " << delta << "\n";
@@ -236,10 +229,10 @@ int main (int argc, const char * argv[]){
   fichier2 << priceFFHeston - priceHeston << ")";
   fichier2 << "\n" << "\n";
 
-  fichier2 << "y = cbind(yEuler,yJK,yQE,yQE_M) \n";
+  fichier2 << "y = cbind(yEuler,yJK,yQE) \n";
   fichier2 << "y = abs(y) \n";
   fichier2 << "matplot(x,y,type = c(\"l\",\"l\",\"l\",\"l\"), col = c(\"blue\",\"red\",\"green\",\"magenta\"),lwd=c(1,1,1,1), lty=c(1,1,1,1),xlab = \"Delta\",ylab = \"|e|\") \n";
-  fichier2 << "legend(\"topright\",c(\"Euler\",\"JK\",\"QE\",\"QE-M\"),col = c(\"blue\",\"red\",\"green\",\"magenta\"),lwd=c(1,1,1,1), lty=c(1,1,1,1)) \n";
+  fichier2 << "legend(\"topright\",c(\"Euler\",\"JK\",\"QE\"),col = c(\"blue\",\"red\",\"green\",\"magenta\"),lwd=c(1,1,1,1), lty=c(1,1,1,1)) \n";
   
   fichier2.close();
 
