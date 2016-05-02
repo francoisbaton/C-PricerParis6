@@ -40,9 +40,6 @@ int main (int argc, const char * argv[]){
   std::vector<double> pathX(N+1);
   std::vector<double> pathV(N+1);
   
-  //modele.assetEuler (&pathX,&pathV, T, N,&myGen);
-  //modele.assetJK (&pathX,&pathV, T, N,&myGen);
-  //modele.assetQE  (&pathX,&pathV, T, N,&myGen);
   
   //Test de la classe Option
   double K = 100;
@@ -58,9 +55,6 @@ int main (int argc, const char * argv[]){
   
   //Test de la classe MonteCarlo
   int M = 1000000;
-  //int nbThreads = 4;
-  //nbThreads = nbThreads;
-  //MC * MC = new MonteCarloParallel(M,nbThreads);
   MC* MC = new MonteCarlo(M);
   
   double priceHeston,varIc;
@@ -97,7 +91,7 @@ int main (int argc, const char * argv[]){
   
   //Difference entre prixBS et prix Heston
   double priceBS = 0;
-  std::ofstream fichierDiff("diffBSHeston.txt"); 
+  std::ofstream fichierDiff("comparisonBSHeston.txt"); 
   double S0 = 10;
   fichierDiff << "x=c(";
   
@@ -139,64 +133,63 @@ int main (int argc, const char * argv[]){
   
   modele.X0() = 100;
   
-  //Difference entre prix MC et prix obtenu par la formule semi fermé que l'on stock dans le fichier 
-   std::cout << "Generation du fichier DataError.txt \n";
-  //"dataError.txt"
+  std::cout << "Generation du fichier DataError.txt \n";
+  
   int len = 10;
   double vectDelta[10] = {1, 1/double(2), 1/double(4), 1/double(6), 1/double(8), 1/double(10), 1/double(12),1/double(16),1/double(24), 1/double(32)};
   
   priceFFHeston = opt->computePrice(&modele,r,t);
   std::cout << "prix FF : " << priceFFHeston << "\n \n";
 
-  std::ofstream fichier2("dataError.txt"); 
+  std::ofstream fichierBis("dataError.txt"); 
   
-  fichier2 << "x=c(";
+  fichierBis << "x=c(";
   for (int i = 0; i < len-1; i++){
     delta = vectDelta[i];
-    fichier2 << delta << ",";
+    fichierBis << delta << ",";
   }
   delta = vectDelta[len-1];
-  fichier2 << delta << ")";
+  fichierBis << delta << ")";
   
-  fichier2 << "\n" << "\n";
+  fichierBis << "\n" << "\n";
   
   std::cout << "Euler\n";
-  fichier2 << "yEuler = c(";
+  fichierBis << "yEuler = c(";
   for (int i = 0; i < len-1; i++){
     delta = vectDelta[i];
     std::cout << "Delta = " << delta << "\n";
     MC->computePriceOption(priceHeston, varIc,int(T/delta), opt, &modele, &Heston::assetEuler);
 
     
-    fichier2 << priceFFHeston - priceHeston << ",";
+    fichierBis << priceFFHeston - priceHeston << ",";
   }
   delta = vectDelta[len-1];
   std::cout << "Delta = " << delta << "\n \n";
   MC->computePriceOption(priceHeston, varIc,int(T/delta), opt, &modele, &Heston::assetEuler);
   
-  fichier2 << priceFFHeston - priceHeston << ")";
-  fichier2 << "\n" << "\n";
+  fichierBis << priceFFHeston - priceHeston << ")";
+  fichierBis << "\n" << "\n";
   
   std::cout << "JK \n";
-  fichier2 << "yJK = c(";
+  fichierBis << "yJK = c(";
   for (int i = 0 ; i < len -1; i++){
     delta = vectDelta[i];
     std::cout << "Delta = " << delta << "\n";
     MC->computePriceOption(priceHeston, varIc,int(T/delta), opt, &modele, &Heston::assetJK);
     
     
-    fichier2 << priceFFHeston - priceHeston << ",";
+    fichierBis << priceFFHeston - priceHeston << ",";
     
   }
   delta = vectDelta[len-1];
   std::cout << "Delta = " << delta << "\n \n";
   MC->computePriceOption(priceHeston, varIc,int(T/delta), opt, &modele, &Heston::assetJK);
   
-  fichier2 << priceFFHeston - priceHeston << ")";
-  fichier2 << "\n" << "\n";
+  fichierBis << priceFFHeston - priceHeston << ")";
+  fichierBis << "\n" << "\n";
   
   std::cout << "QE\n";
-  fichier2 << "yQE = c(";
+  fichierBis << "yQE = c(";
   
   for (int i = 0; i < len-1; i++){
     delta = vectDelta[i];
@@ -204,15 +197,15 @@ int main (int argc, const char * argv[]){
     MC->computePriceOption(priceHeston, varIc,int(T/delta), opt, &modele, &Heston::assetQE);
     
     
-    fichier2 << priceFFHeston - priceHeston << ",";
+    fichierBis << priceFFHeston - priceHeston << ",";
     
   }
   delta = vectDelta[len-1];
   std::cout << "Delta = " << delta << "\n \n";
   MC->computePriceOption(priceHeston, varIc,int(T/delta), opt, &modele, &Heston::assetQE);
   
-  fichier2 << priceFFHeston - priceHeston << ")";
-  fichier2 << "\n" << "\n";
+  fichierBis << priceFFHeston - priceHeston << ")";
+  fichierBis << "\n" << "\n";
     
   for (int i = 0; i<len-1; i++){
     delta = vectDelta[i];
@@ -220,21 +213,21 @@ int main (int argc, const char * argv[]){
     MC->computePriceOption(priceHeston, varIc,int(T/delta), opt, &modele, &Heston::assetQE);
     
     
-    fichier2 << priceFFHeston - priceHeston << ",";
+    fichierBis << priceFFHeston - priceHeston << ",";
   }
   delta = vectDelta[len-1];
   std::cout << "Delta = " << delta << "\n \n";
   MC->computePriceOption(priceHeston, varIc,int(T/delta), opt, &modele, &Heston::assetQE);
   
-  fichier2 << priceFFHeston - priceHeston << ")";
-  fichier2 << "\n" << "\n";
+  fichierBis << priceFFHeston - priceHeston << ")";
+  fichierBis << "\n" << "\n";
 
-  fichier2 << "y = cbind(yEuler,yJK,yQE) \n";
-  fichier2 << "y = abs(y) \n";
-  fichier2 << "matplot(x,y,type = c(\"l\",\"l\",\"l\",\"l\"), col = c(\"blue\",\"red\",\"green\",\"magenta\"),lwd=c(1,1,1,1), lty=c(1,1,1,1),xlab = \"Delta\",ylab = \"|e|\") \n";
-  fichier2 << "legend(\"topright\",c(\"Euler\",\"JK\",\"QE\"),col = c(\"blue\",\"red\",\"green\",\"magenta\"),lwd=c(1,1,1,1), lty=c(1,1,1,1)) \n";
+  fichierBis << "y = cbind(yEuler,yJK,yQE) \n";
+  fichierBis << "y = abs(y) \n";
+  fichierBis << "matplot(x,y,type = c(\"l\",\"l\",\"l\",\"l\"), col = c(\"blue\",\"red\",\"green\",\"magenta\"),lwd=c(1,1,1,1), lty=c(1,1,1,1),xlab = \"Delta\",ylab = \"|e|\") \n";
+  fichierBis << "legend(\"topright\",c(\"Euler\",\"JK\",\"QE\"),col = c(\"blue\",\"red\",\"green\",\"magenta\"),lwd=c(1,1,1,1), lty=c(1,1,1,1)) \n";
   
-  fichier2.close();
+  fichierBis.close();
 
   return 0;
 }
